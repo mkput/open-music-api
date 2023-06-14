@@ -1,0 +1,34 @@
+{
+  "name": "open-music-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start-dev": "nodemon ./src/server.js",
+    "migrate": "node-pg-migrate"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mkput/open-music-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mkput/open-music-api/issues"
+  },
+  "homepage": "https://github.com/mkput/open-music-api#readme",
+  "dependencies": {
+    "@hapi/hapi": "^21.3.2",
+    "auto-bind": "^4.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.1.4",
+    "hapi": "^18.1.0",
+    "joi": "^17.9.2",
+    "nanoid": "^3.1.22",
+    "node-pg-migrate": "^6.2.2",
+    "nodemon": "^2.0.22",
+    "pg": "^8.11.0"
+  }
+}
