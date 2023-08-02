@@ -42,7 +42,6 @@ class AlbumServices {
     };
 
     const songs = await this._pool.query(songsQuery);
-    console.log(songs.rows);
 
     return {
       ...result.rows[0],

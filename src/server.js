@@ -1,17 +1,46 @@
 require('dotenv').config();
+const Jwt = require('@hapi/jwt');
 
 const Hapi = require('@hapi/hapi');
 const ClientError = require('./exceptions/ClientError');
-const AlbumServices = require('./services/postgre/AlbumServices');
+
+// Songs
 const SongsServices = require('./services/postgre/SongsServices');
-const AlbumValidator = require('./validator/albums');
 const SongsValidator = require('./validator/songs');
-const albums = require('./api/albums');
 const songs = require('./api/songs');
+
+// album
+const AlbumValidator = require('./validator/albums');
+const AlbumServices = require('./services/postgre/AlbumServices');
+const albums = require('./api/albums');
+
+// users
+const users = require('./api/users');
+const UserValidator = require('./validator/users');
+const UsersServices = require('./services/postgre/UsersServices');
+
+// authentications
+const authentications = require('./api/authentications');
+const AuthenticationsServices = require('./services/postgre/AuthenticationsServices');
+const AuthenticationsValidator = require('./validator/authentications');
+const TokenManager = require('./tokenize/TokenManager');
+
+// paylists
+const playlists = require('./api/playlists');
+const PlaylistsServices = require('./services/postgre/PlaylistsServices');
+const PlaylistsValidator = require('./validator/playlists');
+
+// collaborations
+const collaborations = require('./api/collaborations');
+const CollaborationsServices = require('./services/postgre/CollaborationsServices');
 
 const init = async () => {
   const albumServices = new AlbumServices();
   const songsServices = new SongsServices();
+  const usersService = new UsersServices();
+  const authenticationsService = new AuthenticationsServices();
+  const collaborationsService = new CollaborationsServices();
+  const playlistsService = new PlaylistsServices(collaborationsService);
 
   const server = Hapi.server({
     host: process.env.HOST,
@@ -21,6 +50,30 @@ const init = async () => {
         origin: ['*'],
       },
     },
+  });
+
+  // registrasi plugin eksternal
+  await server.register([
+    {
+      plugin: Jwt,
+    },
+  ]);
+
+  // mendefinisikan strategy autentikasi jwt
+  server.auth.strategy('openmusicapp_jwt', 'jwt', {
+    keys: process.env.ACCESS_TOKEN_KEY,
+    verify: {
+      aud: false,
+      iss: false,
+      sub: false,
+      maxAgeSec: process.env.ACCESS_TOKEN_AGE,
+    },
+    validate: (artifacts) => ({
+      isValid: true,
+      credentials: {
+        id: artifacts.decoded.payload.id,
+      },
+    }),
   });
 
   await server.register([
@@ -36,6 +89,38 @@ const init = async () => {
       options: {
         service: songsServices,
         validator: SongsValidator,
+      },
+    },
+    {
+      plugin: users,
+      options: {
+        service: usersService,
+        validator: UserValidator,
+      },
+    },
+    {
+      plugin: authentications,
+      options: {
+        authenticationsService,
+        usersService,
+        tokenManager: TokenManager,
+        validator: AuthenticationsValidator,
+      },
+    },
+    {
+      plugin: playlists,
+      options: {
+        playlistsService,
+        songsService: songsServices,
+        validator: PlaylistsValidator,
+      },
+    },
+    {
+      plugin: collaborations,
+      options: {
+        collaborationsService,
+        usersService,
+        playlistsService,
       },
     },
   ]);

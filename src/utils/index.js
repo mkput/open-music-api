@@ -18,6 +18,12 @@ const mapDBToModel = ({
   albumId: album_id,
 });
 
+const mapPlaylistDBToModel = ({ id, name, owner }) => ({
+  id,
+  name,
+  username: owner,
+});
+
 const generatedAlbumId = () => {
   const prefix = 'album-';
   const length = 16;
@@ -32,4 +38,9 @@ const generatedSongId = () => {
   return prefix + id;
 };
 
-module.exports = { mapDBToModel, generatedAlbumId, generatedSongId };
+module.exports = {
+  mapDBToModel,
+  generatedAlbumId,
+  generatedSongId,
+  mapPlaylistDBToModel,
+};
